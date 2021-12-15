@@ -9,12 +9,10 @@ class Service {
   _apiBase = 'https://stores-api.zakaz.ua';
   instance = null;
 
+  // Implementation of Singleton pattern
   static getInstance() {
     if (!Service.instance) {
-      console.log('Creating instance');
       Service.instance = new Service();
-    } else {
-      console.log('Instance exists');
     }
 
     return Service.instance;
