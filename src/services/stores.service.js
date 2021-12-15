@@ -2,6 +2,8 @@ const axios = require('axios');
 const NodeCache = require('node-cache');
 const cache = new NodeCache({ stdTTL: 60, checkperiod: 90 });
 
+const Store = require('../models/store');
+const Product = require('../models/product');
 const { capitalize } = require('../helpers/helpers');
 
 class Service {
@@ -36,7 +38,7 @@ class Service {
         const { id, retail_chain } = shop;
 
         if (!stores.find((item) => item.name.toLowerCase() === retail_chain)) {
-          stores.push({ id, name: capitalize(retail_chain) });
+          stores.push(new Store(id, capitalize(retail_chain)));
         }
       });
 
@@ -70,7 +72,10 @@ class Service {
       // Transform the result set
       let resultsArray = data.results
         .filter((item) => item.in_stock === true)
-        .map((item) => this._transformProduct(item, storeName));
+        .map((item) => {
+          const transformed = this._transformProduct(item, storeName);
+          return new Product(transformed);
+        });
 
       // Set cache
       cache.set(`${storeId}/${query}`, resultsArray);
@@ -112,7 +117,10 @@ class Service {
           ...resultsArray,
           ...response.data.results
             .filter((item) => item.in_stock === true)
-            .map((product) => this._transformProduct(product, stores[idx].name)),
+            .map((product) => {
+              const transformed = this._transformProduct(product, stores[idx].name);
+              return new Product(transformed);
+            }),
         ];
       });
 
